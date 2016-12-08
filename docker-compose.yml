@@ -1,0 +1,44 @@
+version: '2'
+
+services:
+    web:
+        image: astondevops/docker-web-flask
+        container_name: web_flask
+        ports:
+            - "5000:5000"
+        command: ["-h=0.0.0.0"]
+    jmeter:
+        image: astondevops/docker-jmeter
+        container_name: jmeter_web_flask
+        volumes:
+            - ./results:/results
+        command: ["-H", "web", "-P", "5000"]
+        links:
+            - web
+    jenkins:
+        image: jenkins:alpine
+        hostname: localhost
+
+        ports:
+            - "8080:8080"
+            - "50000:50000"
+
+        volumes:
+            - /home/stagiaire/PycharmProjects/jenkins/data:/var/jenkins_home
+        links:
+            - gitlab
+
+    gitlab:
+        image: gitlab/gitlab-ce:8.9.6-ce.0
+        restart: always
+        hostname: '0.0.0.0'
+        environment:
+           GITLAB_OMNIBUS_CONFIG: |
+        ports:
+           - "80:80"
+           - "443:443"
+           - "2222:22"
+        volumes:
+            - /opt/gitlab/config:/etc/gitlab
+            - /opt/gitlab/logs:/var/log/gitlab
+            - /opt/gitlab/data:/var/opt/gitlab
